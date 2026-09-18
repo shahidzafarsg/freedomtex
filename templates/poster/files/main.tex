@@ -1,0 +1,84 @@
+\documentclass[25pt, a0paper, portrait, margin=0mm, innermargin=15mm, blockverticalspace=15mm, colspace=15mm]{tikzposter}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\definecolor{ftteal}{RGB}{13,148,136}
+\definecolor{ftindigo}{RGB}{79,70,229}
+\definecolorstyle{FreedomColors}{
+  \definecolor{colorOne}{named}{ftteal}
+  \definecolor{colorTwo}{named}{ftindigo}
+  \definecolor{colorThree}{named}{white}
+}{
+  \colorlet{backgroundcolor}{white}
+  \colorlet{framecolor}{colorOne}
+  \colorlet{titlefgcolor}{white}
+  \colorlet{titlebgcolor}{colorOne}
+  \colorlet{blocktitlebgcolor}{colorTwo}
+  \colorlet{blocktitlefgcolor}{white}
+  \colorlet{blockbodybgcolor}{white}
+  \colorlet{blockbodyfgcolor}{black}
+  \colorlet{innerblocktitlebgcolor}{colorOne}
+  \colorlet{innerblocktitlefgcolor}{white}
+  \colorlet{innerblockbodybgcolor}{colorOne!10}
+  \colorlet{innerblockbodyfgcolor}{black}
+  \colorlet{notefgcolor}{black}
+  \colorlet{notebgcolor}{colorOne!20}
+  \colorlet{notefrcolor}{colorOne}
+}
+\usetheme{Simple}
+\usecolorstyle{FreedomColors}
+
+\title{Poster Title: A Short and Descriptive Headline}
+\author{First Author, Second Author}
+\institute{Multimedia University, Malaysia}
+
+\begin{document}
+
+\maketitle
+
+\begin{columns}
+  \column{0.5}
+  \block{Introduction}{
+    Explain the problem and why it matters in two or three sentences. Posters are read from a distance, so keep text short and use large figures.
+  }
+  \block{Objectives}{
+    \begin{itemize}
+      \item First objective
+      \item Second objective
+      \item Third objective
+    \end{itemize}
+  }
+  \block{Method}{
+    Describe the approach. Key equation:
+    \[
+      \hat{y} = \arg\max_{c} \; P(c \mid x)
+    \]
+    \innerblock{Highlight}{Use inner blocks to emphasise a key idea.}
+  }
+
+  \column{0.5}
+  \block{Results}{
+    \begin{center}
+      \begin{tabular}{lcc}
+        \toprule
+        Method & Accuracy & F1 \\
+        \midrule
+        Baseline & 0.84 & 0.81 \\
+        Proposed & \textbf{0.93} & \textbf{0.90} \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+  }
+  \block{Conclusion}{
+    Summarise the main take-away message in one or two sentences.
+  }
+  \note[targetoffsetx=-8cm, targetoffsety=-5cm, width=10cm]{Notes like this one can point at things.}
+  \block{References}{
+    \small
+    [1] A. Author, ``An important paper,'' \textit{Journal}, 2024.
+  }
+\end{columns}
+
+\end{document}

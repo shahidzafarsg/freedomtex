@@ -1,0 +1,103 @@
+{
+  "name": "freedomtex",
+  "productName": "FreedomTex",
+  "version": "1.0.0",
+  "description": "FreedomTex - a free, offline LaTeX editor for Windows. Dedicated to the students of Multimedia University, Malaysia.",
+  "author": {
+    "name": "Shahid Zafar",
+    "url": "https://freedomsoft.uk"
+  },
+  "homepage": "https://freedomsoft.uk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shahidzafarsg/freedomtex.git"
+  },
+  "license": "MIT",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build:renderer": "vite build",
+    "start": "vite build && electron .",
+    "icons": "node scripts/make-icons.mjs",
+    "fetch-miktex": "node scripts/fetch-miktex.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "test:templates": "node scripts/test-templates.mjs",
+    "dist": "node scripts/make-icons.mjs && node scripts/fetch-miktex.mjs && vite build && electron-builder --win nsis --x64"
+  },
+  "build": {
+    "appId": "org.freedomtex.app",
+    "productName": "FreedomTex",
+    "copyright": "Copyright © 2026 Shahid Zafar",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**",
+      "dist/**",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      { "from": "templates", "to": "templates" },
+      { "from": "resources/miktex", "to": "miktex", "filter": ["*.exe"] },
+      { "from": "LICENSE", "to": "LICENSE" },
+      { "from": "THIRD_PARTY_NOTICES.md", "to": "THIRD_PARTY_NOTICES.md" },
+      { "from": "build/icon.png", "to": "icon.png" }
+    ],
+    "asar": true,
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico",
+      "legalTrademarks": "FreedomTex"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FreedomTex",
+      "license": "LICENSE",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "uninstallDisplayName": "FreedomTex",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "FreedomTex-Setup-${version}.exe"
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1"
+  },
+  "devDependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/legacy-modes": "^6.5.4",
+    "@codemirror/lint": "^6.9.7",
+    "@codemirror/search": "^6.7.2",
+    "@codemirror/state": "^6.7.5",
+    "@codemirror/view": "^6.43.12",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@lezer/highlight": "^1.2.3",
+    "@replit/codemirror-emacs": "^6.1.0",
+    "@replit/codemirror-vim": "^6.4.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "diff": "^9.0.0",
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3",
+    "katex": "^0.18.7",
+    "lucide-react": "^1.47.0",
+    "pdfjs-dist": "^6.3.289",
+    "playwright-core": "^1.63.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "sharp": "^0.35.4",
+    "vite": "^8.3.0",
+    "zustand": "^5.0.15"
+  }
+}

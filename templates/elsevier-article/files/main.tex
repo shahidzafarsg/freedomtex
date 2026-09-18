@@ -1,0 +1,65 @@
+\documentclass[preprint,12pt,authoryear]{elsarticle}
+
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{lineno}
+\usepackage{hyperref}
+
+\journal{Journal Name}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Title of the Manuscript}
+
+\author[mmu]{First Author\corref{cor1}}
+\ead{first.author@example.com}
+\author[mmu]{Second Author}
+
+\cortext[cor1]{Corresponding author}
+\affiliation[mmu]{organization={Multimedia University},
+            addressline={Persiaran Multimedia},
+            city={Cyberjaya},
+            postcode={63100},
+            state={Selangor},
+            country={Malaysia}}
+
+\begin{abstract}
+Summarise the aim, methods, results and conclusions of the study in a single paragraph.
+\end{abstract}
+
+\begin{keyword}
+first keyword \sep second keyword \sep third keyword
+\end{keyword}
+
+\end{frontmatter}
+
+\linenumbers
+
+\section{Introduction}
+\label{sec:intro}
+Motivate the study and review the literature \citep{smith2020, lee2022}. As \citet{smith2020} showed, \ldots
+
+\section{Materials and methods}
+\label{sec:methods}
+Describe the data and methods in enough detail to be reproduced.
+
+\section{Results}
+\label{sec:results}
+Present the findings with tables and figures.
+
+\section{Discussion}
+Interpret the results and compare them with previous work.
+
+\section{Conclusions}
+Summarise the main conclusions.
+
+\section*{Acknowledgements}
+Acknowledge funding and support.
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{references}
+
+\end{document}

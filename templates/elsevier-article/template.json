@@ -1,0 +1,10 @@
+{
+  "name": "Elsevier Journal Article",
+  "description": "Journal manuscript using the elsarticle class with author-year citations.",
+  "category": "Academic",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Journal Article",
+  "bibliography": "BibTeX",
+  "order": 11
+}

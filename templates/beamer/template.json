@@ -1,0 +1,9 @@
+{
+  "name": "Presentation Slides",
+  "description": "Beamer slides with title page, outline, blocks, columns and maths.",
+  "category": "Presentation",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "My Presentation",
+  "order": 20
+}

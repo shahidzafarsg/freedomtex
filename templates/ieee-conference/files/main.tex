@@ -1,0 +1,77 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\begin{document}
+
+\title{Paper Title: Use Title Case for\\Conference Submissions}
+
+\author{
+\IEEEauthorblockN{First Author}
+\IEEEauthorblockA{\textit{Faculty of Computing and Informatics} \\
+\textit{Multimedia University}\\
+Cyberjaya, Malaysia \\
+first.author@example.com}
+\and
+\IEEEauthorblockN{Second Author}
+\IEEEauthorblockA{\textit{Faculty of Engineering} \\
+\textit{Multimedia University}\\
+Cyberjaya, Malaysia \\
+second.author@example.com}
+}
+
+\maketitle
+
+\begin{abstract}
+This template shows the IEEE conference layout. Replace this text with an abstract of about 150 to 250 words that states the problem, the approach, the main results and why they matter.
+\end{abstract}
+
+\begin{IEEEkeywords}
+keyword one, keyword two, keyword three
+\end{IEEEkeywords}
+
+\section{Introduction}
+Introduce the problem and your contribution. Cite related work like this \cite{b1}, or several at once \cite{b2, b3}.
+
+\section{Related Work}
+Summarise prior approaches and explain how your work differs.
+
+\section{Method}
+Describe your approach. Equations are numbered automatically:
+\begin{equation}
+    y = \sigma\left( \sum_{i=1}^{n} w_i x_i + b \right) \label{eq:neuron}
+\end{equation}
+where $\sigma$ is the activation function in \eqref{eq:neuron}.
+
+\section{Experiments}
+\begin{table}[htbp]
+\caption{Comparison of Methods}
+\label{tab:results}
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Accuracy} & \textbf{F1} \\
+\midrule
+Baseline & 0.842 & 0.811 \\
+Ours & \textbf{0.913} & \textbf{0.897} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:results} summarises the results.
+
+\section{Conclusion}
+State what you found and suggest future work.
+
+\section*{Acknowledgment}
+Thank funding bodies and colleagues here.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

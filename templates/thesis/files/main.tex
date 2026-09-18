@@ -1,0 +1,77 @@
+% ===============================================================
+%  Postgraduate thesis template
+%  Always check the latest formatting guidelines from your faculty
+%  or the Institute for Postgraduate Studies, and adjust margins,
+%  spacing and the title page to match.
+% ===============================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ----- Layout -----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[left=4cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ----- Content -----
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[nottoc]{tocbibind}
+
+% ----- References -----
+\usepackage[backend=biber, style=authoryear, maxcitenames=2, uniquename=false]{biblatex}
+\addbibresource{references.bib}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, citecolor=teal, urlcolor=blue}
+
+% ----- Theorems -----
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{theorem}{Theorem}[chapter]
+
+% ----- Thesis details (used on the title page) -----
+\newcommand{\thesistitle}{The Title of Your Thesis Goes Here}
+\newcommand{\thesisauthor}{Your Full Name}
+\newcommand{\thesisdegree}{Doctor of Philosophy}
+\newcommand{\thesisfaculty}{Faculty of Computing and Informatics}
+\newcommand{\thesisuniversity}{Multimedia University}
+\newcommand{\thesisyear}{2026}
+
+\begin{document}
+
+% ---------------- Front matter ----------------
+\pagenumbering{roman}
+\input{frontmatter/titlepage}
+\input{frontmatter/declaration}
+\input{frontmatter/acknowledgements}
+\input{frontmatter/abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+\input{frontmatter/abbreviations}
+
+% ---------------- Main matter ----------------
+\clearpage
+\pagenumbering{arabic}
+\include{chapters/introduction}
+\include{chapters/literature-review}
+\include{chapters/methodology}
+\include{chapters/results}
+\include{chapters/conclusion}
+
+% ---------------- References ----------------
+\printbibliography[heading=bibintoc, title={References}]
+
+% ---------------- Appendices ----------------
+\appendix
+\include{appendices/appendix-a}
+
+\end{document}

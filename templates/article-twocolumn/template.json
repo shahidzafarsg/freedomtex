@@ -1,0 +1,10 @@
+{
+  "name": "Two-Column Article",
+  "description": "A clean two-column paper using only standard packages.",
+  "category": "Academic",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Research Paper",
+  "bibliography": "BibTeX",
+  "order": 12
+}

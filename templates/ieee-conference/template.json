@@ -1,0 +1,10 @@
+{
+  "name": "IEEE Conference Paper",
+  "description": "Two-column IEEE conference format (IEEEtran) with IEEE-style references.",
+  "category": "Academic",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "IEEE Conference Paper",
+  "bibliography": "BibTeX",
+  "order": 10
+}

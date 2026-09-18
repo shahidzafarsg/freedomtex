@@ -1,0 +1,60 @@
+\documentclass[10pt,a4paper,twocolumn]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2cm, columnsep=0.8cm]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\title{\bfseries A Two-Column Research Paper}
+\author{First Author\thanks{Multimedia University, Malaysia} \and Second Author\footnotemark[1]}
+\date{}
+
+\begin{document}
+
+\twocolumn[
+  \begin{@twocolumnfalse}
+    \maketitle
+    \begin{abstract}
+      Write a concise summary of the paper here. The abstract spans both columns so it stands out from the body text.
+    \end{abstract}
+    \vspace{1em}
+  \end{@twocolumnfalse}
+]
+
+\section{Introduction}
+Two-column layouts are common for conference papers. Text flows from the left column to the right column automatically \cite{ref1}.
+
+\section{Background}
+Explain the necessary background here. Wide figures can span both columns with \texttt{figure*}.
+
+\section{Method}
+\begin{equation}
+    \mathcal{L}(\theta) = -\frac{1}{N} \sum_{i=1}^{N} \log p_\theta(y_i \mid x_i)
+\end{equation}
+
+\section{Results}
+\begin{table}[h]
+    \centering
+    \caption{Results summary.}
+    \begin{tabular}{lr}
+        \toprule
+        Setting & Score \\
+        \midrule
+        A & 71.2 \\
+        B & 78.9 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Conclusion}
+Conclude the paper and outline future work.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

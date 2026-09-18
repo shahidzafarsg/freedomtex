@@ -1,0 +1,9 @@
+{
+  "name": "Curriculum Vitae",
+  "description": "A clean, modern one-page CV for internships and jobs.",
+  "category": "CV",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "My CV",
+  "order": 30
+}

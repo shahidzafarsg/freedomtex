@@ -1,0 +1,10 @@
+{
+  "name": "Example Project",
+  "description": "A guided tour: sections, lists, maths, a figure, a table and citations.",
+  "category": "Start",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Example Project",
+  "bibliography": "BibTeX",
+  "order": 2
+}

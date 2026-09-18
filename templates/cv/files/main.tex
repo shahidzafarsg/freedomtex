@@ -1,0 +1,65 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default]{lato}
+\usepackage[margin=1.7cm, top=1.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{accent}{RGB}{13,148,136}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\titleformat{\section}{\large\bfseries\color{accent}}{}{0pt}{}[\vspace{-0.6em}\color{accent}\rule{\textwidth}{0.8pt}]
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+\setlist[itemize]{leftmargin=1.2em, itemsep=1pt, topsep=2pt}
+
+\newcommand{\entry}[4]{%
+  \textbf{#1} \hfill {\color{gray}#2}\\
+  \textit{#3}\\[-0.2em]
+  #4\par\medskip}
+
+\begin{document}
+
+{\Huge\bfseries Your Name}\\[0.4em]
+{\large\color{accent} Undergraduate Student, Computer Science}\\[0.6em]
+\small
+Cyberjaya, Malaysia \quad | \quad your.email@example.com \quad | \quad +60 12 345 6789 \quad | \quad \href{https://github.com/your-username}{github.com/your-username}
+\normalsize
+
+\section{Profile}
+A motivated student with interests in software engineering and data science. Replace this paragraph with two or three sentences about your strengths and goals.
+
+\section{Education}
+\entry{Bachelor of Computer Science (Hons.)}{2023 to present}{Multimedia University, Cyberjaya}{CGPA: 3.80 / 4.00. Dean's List for four trimesters.}
+
+\entry{Foundation in Information Technology}{2022 to 2023}{Multimedia University}{Completed with distinction.}
+
+\section{Experience}
+\entry{Software Engineering Intern}{Jun 2025 to Sep 2025}{Example Technology Sdn. Bhd., Kuala Lumpur}{%
+\begin{itemize}
+  \item Built a dashboard that reduced reporting time by 40\%.
+  \item Wrote automated tests for an internal API.
+\end{itemize}}
+
+\section{Projects}
+\entry{Final Year Project: Smart Attendance System}{2026}{Python, OpenCV, Flask}{Face-recognition attendance with a web dashboard for lecturers.}
+
+\section{Skills}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+  \textbf{Languages} & Python, Java, C++, JavaScript, SQL \\
+  \textbf{Tools} & Git, Docker, Linux, \LaTeX \\
+  \textbf{Spoken} & English, Malay, Mandarin \\
+\end{tabularx}
+
+\section{Awards}
+\begin{itemize}
+  \item Champion, University Hackathon, 2025
+  \item Merit Scholarship, 2023
+\end{itemize}
+
+\end{document}

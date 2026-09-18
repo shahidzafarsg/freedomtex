@@ -1,0 +1,9 @@
+{
+  "name": "Assignment / Lab Report",
+  "description": "Coursework with a cover block, numbered questions, solutions, code and units.",
+  "category": "Report",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Assignment 1",
+  "order": 15
+}

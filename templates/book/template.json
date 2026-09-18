@@ -1,0 +1,9 @@
+{
+  "name": "Book",
+  "description": "A book with parts, chapters, an index and front and back matter.",
+  "category": "Book",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "My Book",
+  "order": 40
+}

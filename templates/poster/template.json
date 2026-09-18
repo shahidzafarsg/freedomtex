@@ -1,0 +1,9 @@
+{
+  "name": "Research Poster",
+  "description": "A0 portrait conference poster built with tikzposter.",
+  "category": "Poster",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Research Poster",
+  "order": 25
+}

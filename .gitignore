@@ -1,0 +1,13 @@
+node_modules/
+dist/
+release/
+out/
+*.log
+.DS_Store
+Thumbs.db
+
+# The MiKTeX installer is downloaded at build time (npm run fetch-miktex); it is too large for Git.
+resources/miktex/*.exe
+
+# Local test output
+scripts/.smoke/

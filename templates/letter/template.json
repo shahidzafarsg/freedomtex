@@ -1,0 +1,9 @@
+{
+  "name": "Formal Letter",
+  "description": "A formal letter for applications, requests and official correspondence.",
+  "category": "Letter",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Formal Letter",
+  "order": 35
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Blank Project",
+  "description": "An empty article with the essentials loaded.",
+  "category": "Start",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "replaceTitle": true,
+  "defaultName": "Untitled Project",
+  "order": 1
+}

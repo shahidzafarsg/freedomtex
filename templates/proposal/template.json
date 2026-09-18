@@ -1,0 +1,10 @@
+{
+  "name": "Research Proposal",
+  "description": "Proposal with objectives, methodology, timeline chart and references.",
+  "category": "Report",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "Research Proposal",
+  "bibliography": "BibTeX",
+  "order": 16
+}

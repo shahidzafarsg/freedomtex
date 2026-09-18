@@ -1,0 +1,103 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+% ----- Course details -----
+\newcommand{\coursecode}{TCS1234}
+\newcommand{\coursename}{Course Name}
+\newcommand{\assignmenttitle}{Assignment 1}
+\newcommand{\studentname}{Your Name}
+\newcommand{\studentid}{1234567890}
+\newcommand{\lecturer}{Dr. Lecturer Name}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\coursecode: \assignmenttitle}
+\rhead{\studentname}
+\cfoot{\thepage}
+
+\theoremstyle{definition}
+\newtheorem{question}{Question}
+\newenvironment{solution}{\begin{proof}[Solution]}{\end{proof}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{teal}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{orange!80!black},
+  numbers=left, numberstyle=\tiny\color{gray},
+  frame=single, rulecolor=\color{gray!40},
+  breaklines=true, showstringspaces=false
+}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries \assignmenttitle}\\[0.4em]
+  {\large \coursecode\ \coursename}\\[1em]
+  \begin{tabular}{rl}
+    Student: & \studentname\ (\studentid) \\
+    Lecturer: & \lecturer \\
+    Date: & \today
+  \end{tabular}
+\end{center}
+\vspace{1em}
+
+\begin{question}
+Solve $x^2 - 5x + 6 = 0$.
+\end{question}
+\begin{solution}
+Factorising gives $(x-2)(x-3)=0$, so $x = 2$ or $x = 3$.
+\end{solution}
+
+\begin{question}
+A car travels \SI{120}{\kilo\metre} in \SI{1.5}{\hour}. Find its average speed.
+\end{question}
+\begin{solution}
+\[
+  v = \frac{d}{t} = \frac{\SI{120}{\kilo\metre}}{\SI{1.5}{\hour}} = \SI{80}{\kilo\metre\per\hour}.
+\]
+\end{solution}
+
+\begin{question}
+Write a Python function that returns the factorial of $n$.
+\end{question}
+\begin{solution}
+\begin{lstlisting}[language=Python]
+def factorial(n):
+    # Iterative factorial
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result
+\end{lstlisting}
+\end{solution}
+
+\section*{Lab Results}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{S[table-format=2.1] S[table-format=3.2]}
+    \toprule
+    {Voltage (\si{\volt})} & {Current (\si{\milli\ampere})} \\
+    \midrule
+    1.0 & 10.20 \\
+    2.0 & 20.35 \\
+    5.0 & 50.90 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Measured current for each applied voltage.}
+\end{table}
+
+\end{document}

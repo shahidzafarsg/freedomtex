@@ -1,0 +1,10 @@
+{
+  "name": "Postgraduate Thesis",
+  "description": "PhD or Master's thesis with front matter, chapters in separate files, appendices and biblatex references.",
+  "category": "Thesis",
+  "compiler": "pdflatex",
+  "mainFile": "main.tex",
+  "defaultName": "My Thesis",
+  "bibliography": "Biber",
+  "order": 5
+}

@@ -1,0 +1,76 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{bar}{RGB}{13,148,136}
+\newcommand{\on}{\cellcolor{bar}}
+
+\title{\textbf{Research Proposal}\\[0.3em]\large Title of the Proposed Research}
+\author{Your Name\\Supervisor: Dr. Supervisor Name\\Multimedia University}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A brief summary of the proposed research, its aims and expected outcomes.
+\end{abstract}
+
+\section{Introduction}
+Background and motivation for the research \citep{creswell2018}.
+
+\section{Problem Statement}
+What problem will the research solve, and why does it need solving now?
+
+\section{Objectives}
+\begin{enumerate}[label=\textbf{O\arabic*.}]
+  \item To identify \ldots
+  \item To design \ldots
+  \item To evaluate \ldots
+\end{enumerate}
+
+\section{Literature Review}
+Summarise the key related work and the gap this proposal addresses.
+
+\section{Methodology}
+Describe the research design, data, tools and evaluation.
+
+\section{Timeline}
+\begin{table}[h]
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l*{12}{c}}
+\toprule
+Activity & \multicolumn{12}{c}{Month} \\
+ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+\midrule
+Literature review & \on & \on & \on &  &  &  &  &  &  &  &  &  \\
+Data collection &  &  & \on & \on & \on &  &  &  &  &  &  &  \\
+Development &  &  &  &  & \on & \on & \on & \on &  &  &  &  \\
+Evaluation &  &  &  &  &  &  &  & \on & \on & \on &  &  \\
+Writing &  &  &  &  &  &  &  &  &  & \on & \on & \on \\
+\bottomrule
+\end{tabular}
+\caption{Planned research schedule.}
+\end{table}
+
+\section{Expected Outcomes}
+Describe the expected results and contributions.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
