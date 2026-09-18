@@ -6,6 +6,7 @@ import { commands, runCommand } from '../commands';
 import { Menu } from './ui';
 import { openProject } from '../actions';
 import logo from '../assets/logo.svg';
+import { isMac } from '../lib/platform';
 
 function resolveItems(items, state) {
   const out = [];
@@ -59,7 +60,7 @@ export default function TitleBar() {
         <img src={logo} alt="" />
         <span>FreedomTex</span>
       </div>
-      {screen !== 'setup' && screen !== 'loading' && (
+      {screen !== 'setup' && screen !== 'loading' && !isMac && (
         <div className="menubar no-drag">
           {MENUS.map((m) => (
             <button

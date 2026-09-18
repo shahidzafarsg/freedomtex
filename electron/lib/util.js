@@ -49,6 +49,13 @@ function uid(prefix = '') {
   return prefix + crypto.randomBytes(8).toString('hex');
 }
 
+const IS_WIN = process.platform === 'win32';
+
+/** Executable file name for this platform (pdflatex -> pdflatex.exe on Windows). */
+function exeName(name) {
+  return IS_WIN ? `${name}.exe` : name;
+}
+
 /** Spawn a process and collect output. .bat/.cmd files need a shell on Windows. */
 function run(cmd, args = [], opts = {}) {
   return new Promise((resolve) => {
@@ -61,6 +68,8 @@ function run(cmd, args = [], opts = {}) {
         env: opts.env || process.env,
         windowsHide: true,
         shell: needsShell,
+        // Own process group on macOS/Linux so a stopped compile also stops its children.
+        detached: !IS_WIN,
       });
     } catch (err) {
       resolve({ code: -1, stdout: '', stderr: String(err.message || err), error: err });
@@ -99,9 +108,14 @@ function run(cmd, args = [], opts = {}) {
 function killTree(pid) {
   if (!pid) return;
   try {
-    execFile('taskkill', ['/pid', String(pid), '/T', '/F'], { windowsHide: true }, () => {});
+    if (IS_WIN) execFile('taskkill', ['/pid', String(pid), '/T', '/F'], { windowsHide: true }, () => {});
+    else process.kill(-pid, 'SIGKILL'); // negative pid = the whole process group
   } catch {
-    /* ignore */
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      /* already gone */
+    }
   }
 }
 
@@ -187,6 +201,8 @@ function resolveInside(root, rel) {
 }
 
 module.exports = {
+  IS_WIN,
+  exeName,
   exists,
   isDir,
   toPosix,

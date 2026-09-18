@@ -1,0 +1,133 @@
+name: Build and test
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to attach the builds to (leave empty to only build and test)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    name: macOS (Apple Silicon and Intel)
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          node node_modules/electron/install.js
+
+      - name: Build app (.dmg and .zip, arm64 and x64)
+        run: |
+          node scripts/make-icons.mjs
+          npx vite build
+          npx electron-builder --mac --arm64 --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Install BasicTeX (TeX Live for Mac) for the tests
+        run: |
+          brew install --cask basictex
+          echo "/Library/TeX/texbin" >> "$GITHUB_PATH"
+          sudo /Library/TeX/texbin/tlmgr update --self
+
+      - name: Compile templates (missing packages installed through the app)
+        env:
+          FREEDOMTEX_SUDO: '1'
+        run: node scripts/test-templates.mjs blank example thesis ieee-conference beamer
+
+      - name: UI smoke test on the packaged app
+        env:
+          SMOKE_EXE: release/mac-arm64/FreedomTex.app/Contents/MacOS/FreedomTex
+        run: node scripts/smoke.mjs
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-screenshots
+          path: scripts/.smoke/*.png
+          if-no-files-found: ignore
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: freedomtex-mac
+          path: |
+            release/*.dmg
+            release/*.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release' || inputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" release/*.dmg release/*.zip --clobber
+
+  windows:
+    name: Windows (clean machine, first-run MiKTeX install)
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          node node_modules/electron/install.js
+
+      - name: Build installer
+        run: |
+          node scripts/make-icons.mjs
+          node scripts/fetch-miktex.mjs
+          npx vite build
+          npx electron-builder --win nsis --x64 --publish never
+
+      - name: First run on a PC without LaTeX (installs the bundled MiKTeX)
+        env:
+          SMOKE_EXE: release\win-unpacked\FreedomTex.exe
+        run: node scripts/test-firstrun.mjs
+
+      - name: Compile templates with the fresh MiKTeX
+        run: node scripts/test-templates.mjs blank example thesis ieee-conference
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-screenshots
+          path: scripts/.smoke/**/*.png
+          if-no-files-found: ignore
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: freedomtex-windows
+          path: release/FreedomTex-Setup-*.exe
+
+      - name: Attach to release
+        if: github.event_name == 'release' || inputs.tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" release/FreedomTex-Setup-*.exe --clobber

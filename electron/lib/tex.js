@@ -7,47 +7,59 @@ const https = require('https');
 const crypto = require('crypto');
 const settings = require('./settings');
 const paths = require('./paths');
-const { exists, run, walk } = require('./util');
+const { exists, run, walk, exeName, IS_WIN } = require('./util');
 
+const IS_MAC = process.platform === 'darwin';
 let detected = null;
+
+function texLiveYears(base) {
+  try {
+    return fs.readdirSync(base).filter((y) => /^\d{4}(basic)?$/.test(y)).sort().reverse();
+  } catch {
+    return [];
+  }
+}
 
 function candidateBinDirs() {
   const dirs = [];
   const s = settings.get();
   if (s.texBinPath) dirs.push(s.texBinPath);
-  const local = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-  dirs.push(path.join(local, 'Programs', 'MiKTeX', 'miktex', 'bin', 'x64'));
-  dirs.push(path.join(process.env.ProgramFiles || 'C:\\Program Files', 'MiKTeX', 'miktex', 'bin', 'x64'));
-  dirs.push(path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'MiKTeX', 'miktex', 'bin'));
-  // TeX Live: newest year first
-  for (const base of ['C:\\texlive', path.join(os.homedir(), 'texlive')]) {
-    try {
-      const years = fs.readdirSync(base).filter((y) => /^\d{4}$/.test(y)).sort().reverse();
-      for (const y of years) {
-        dirs.push(path.join(base, y, 'bin', 'windows'));
-        dirs.push(path.join(base, y, 'bin', 'win64'));
-        dirs.push(path.join(base, y, 'bin', 'win32'));
-      }
-    } catch {
-      /* not installed */
+  const home = os.homedir();
+  if (IS_WIN) {
+    const local = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
+    dirs.push(path.join(local, 'Programs', 'MiKTeX', 'miktex', 'bin', 'x64'));
+    dirs.push(path.join(process.env.ProgramFiles || 'C:\\Program Files', 'MiKTeX', 'miktex', 'bin', 'x64'));
+    dirs.push(path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'MiKTeX', 'miktex', 'bin'));
+    for (const base of ['C:\\texlive', path.join(home, 'texlive')]) {
+      for (const y of texLiveYears(base)) for (const a of ['windows', 'win64', 'win32']) dirs.push(path.join(base, y, 'bin', a));
     }
+  } else {
+    // Apps started from Finder get a minimal PATH, so list the usual TeX locations explicitly.
+    dirs.push('/Library/TeX/texbin'); // MacTeX and BasicTeX
+    for (const base of ['/usr/local/texlive', path.join(home, 'texlive')]) {
+      for (const y of texLiveYears(base)) {
+        for (const a of ['universal-darwin', 'arm64-darwin', 'x86_64-darwin', 'x86_64-darwinlegacy', 'x86_64-linux', 'aarch64-linux']) dirs.push(path.join(base, y, 'bin', a));
+      }
+    }
+    dirs.push(path.join(home, 'bin')); // MiKTeX for macOS (private setup)
+    dirs.push('/opt/homebrew/bin', '/usr/local/bin', '/usr/bin');
   }
   for (const p of (process.env.PATH || '').split(path.delimiter)) if (p) dirs.push(p);
-  return dirs;
+  return [...new Set(dirs)];
 }
 
 async function detect(force = false) {
   if (detected && !force) return detected;
   let result = { found: false };
   for (const dir of candidateBinDirs()) {
-    if (!exists(path.join(dir, 'pdflatex.exe'))) continue;
-    const isMiktex = exists(path.join(dir, 'miktex.exe')) || exists(path.join(dir, 'mpm.exe'));
-    const isTexLive = !isMiktex && exists(path.join(dir, 'tlmgr.bat'));
-    const v = await run(path.join(dir, 'pdflatex.exe'), ['--version'], { timeout: 20000 });
+    if (!exists(path.join(dir, exeName('pdflatex')))) continue;
+    const isMiktex = exists(path.join(dir, exeName('miktex'))) || exists(path.join(dir, exeName('mpm')));
+    const isTexLive = !isMiktex && (exists(path.join(dir, 'tlmgr.bat')) || exists(path.join(dir, 'tlmgr')));
+    const v = await run(path.join(dir, exeName('pdflatex')), ['--version'], { timeout: 20000 });
     const firstLine = (v.stdout || '').split(/\r?\n/)[0] || '';
     const tools = {};
-    for (const t of ['pdflatex', 'xelatex', 'lualatex', 'bibtex', 'biber', 'makeindex', 'synctex', 'kpsewhich', 'findtexmf', 'texdoc', 'mthelp', 'miktex-console']) {
-      tools[t] = exists(path.join(dir, `${t}.exe`));
+    for (const t of ['pdflatex', 'xelatex', 'lualatex', 'bibtex', 'biber', 'makeindex', 'synctex', 'kpsewhich', 'findtexmf', 'texdoc', 'mthelp', 'miktex-console', 'tlmgr']) {
+      tools[t] = exists(path.join(dir, exeName(t))) || (IS_WIN && exists(path.join(dir, `${t}.bat`)));
     }
     let version = firstLine;
     const mv = /MiKTeX (\d+\.\d+)/.exec(firstLine);
@@ -70,6 +82,7 @@ async function detect(force = false) {
 }
 
 function findBundledInstaller() {
+  if (!IS_WIN) return null;
   const dir = paths.bundledMiktexDir();
   try {
     const f = fs.readdirSync(dir).find((n) => /^basic-miktex.*\.exe$/i.test(n));
@@ -81,11 +94,44 @@ function findBundledInstaller() {
 
 function toolPath(name) {
   if (!detected || !detected.found) return null;
-  const exe = path.join(detected.binDir, `${name}.exe`);
+  const exe = path.join(detected.binDir, exeName(name));
   if (exists(exe)) return exe;
-  const bat = path.join(detected.binDir, `${name}.bat`);
-  if (exists(bat)) return bat;
+  if (IS_WIN) {
+    const bat = path.join(detected.binDir, `${name}.bat`);
+    if (exists(bat)) return bat;
+  }
   return null;
+}
+
+/** TeX Live installs are usually owned by root on macOS/Linux, so tlmgr needs administrator rights. */
+function texLiveNeedsAdmin() {
+  if (IS_WIN || !detected || !detected.binDir) return false;
+  try {
+    fs.accessSync(fs.realpathSync(path.join(detected.binDir, 'tlmgr')), fs.constants.W_OK);
+    const root = path.resolve(fs.realpathSync(path.join(detected.binDir, 'tlmgr')), '..', '..', '..');
+    fs.accessSync(root, fs.constants.W_OK);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function shellQuote(s) {
+  return `'${String(s).replace(/'/g, `'\\''`)}'`;
+}
+
+/** Run tlmgr, elevating when needed: macOS password dialog, pkexec on Linux, or sudo -n in CI. */
+function runTlmgr(args, onData, timeout) {
+  const tlmgr = toolPath('tlmgr');
+  if (!texLiveNeedsAdmin()) return run(tlmgr, args, { env: texEnv(), onData, timeout });
+  if (process.env.FREEDOMTEX_SUDO === '1') return run('sudo', ['-n', tlmgr, ...args], { env: texEnv(), onData, timeout });
+  if (IS_MAC) {
+    onData && onData('Asking for your Mac password to install into TeX Live...\n');
+    const cmd = [tlmgr, ...args].map(shellQuote).join(' ') + ' 2>&1';
+    const script = `do shell script ${JSON.stringify(cmd)} with administrator privileges`;
+    return run('/usr/bin/osascript', ['-e', script], { onData, timeout });
+  }
+  return run('pkexec', [tlmgr, ...args], { env: texEnv(), onData, timeout });
 }
 
 function texEnv(extra = {}) {
@@ -209,9 +255,21 @@ async function installPackages(pkgs, onProgress) {
       return { ok: true, installed: unique };
     }
     if (detected.type === 'texlive') {
-      const tlmgr = toolPath('tlmgr');
-      const r = await run(tlmgr, ['install', ...unique], { env: texEnv(), onData: log, timeout: 30 * 60000 });
-      if (r.code !== 0) return { ok: false, error: (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-6).join('\n') };
+      let r = await runTlmgr(['install', ...unique], log, 30 * 60000);
+      const out = `${r.stdout}\n${r.stderr}`;
+      if (r.code !== 0 && /tlmgr itself needs to be updated|update --self/i.test(out)) {
+        log('\nUpdating tlmgr first, then retrying...\n');
+        await runTlmgr(['update', '--self'], log, 15 * 60000);
+        r = await runTlmgr(['install', ...unique], log, 30 * 60000);
+      }
+      if (r.code !== 0) {
+        const msg = `${r.stdout}\n${r.stderr}`;
+        if (/User canceled|-128/.test(msg)) return { ok: false, error: 'The password prompt was cancelled, so nothing was installed.' };
+        if (/is older than remote repository|Cross release updates/i.test(msg)) {
+          return { ok: false, error: 'Your TeX Live is from an older year than the package server. Install the current MacTeX or BasicTeX from tug.org/mactex, then try again.' };
+        }
+        return { ok: false, error: msg.trim().split(/\r?\n/).slice(-6).join('\n') };
+      }
       return { ok: true, installed: unique };
     }
     throw new Error('Automatic package installation needs MiKTeX or TeX Live.');
@@ -358,7 +416,31 @@ function download(url, dest, onProgress, redirects = 0) {
   });
 }
 
+const BASICTEX_URL = 'https://mirror.ctan.org/systems/mac/mactex/BasicTeX.pkg';
+
+/** macOS: download BasicTeX (TeX Live for Mac, about 100 MB), open Apple's installer, and wait for it. */
+async function downloadAndInstallMac(onProgress) {
+  const dest = path.join(os.tmpdir(), 'BasicTeX.pkg');
+  let last = 0;
+  await download(BASICTEX_URL, dest, ({ got, total }) => {
+    if (Date.now() - last > 400) {
+      last = Date.now();
+      onProgress && onProgress(`Downloading BasicTeX: ${(got / 1048576).toFixed(1)} MB${total ? ` of ${(total / 1048576).toFixed(1)} MB` : ''}\n`);
+    }
+  });
+  onProgress && onProgress('Opening the macOS installer. Follow its steps; it will ask for your Mac password.\n');
+  await run('/usr/bin/open', ['-W', dest], { timeout: 60 * 60000 });
+  for (let i = 0; i < 20; i++) {
+    const info = await detect(true);
+    if (info.found) return info;
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  throw new Error('TeX was not found after the installer closed. If you cancelled it, try again, or install MacTeX from tug.org/mactex.');
+}
+
 async function downloadAndInstall(onProgress) {
+  if (IS_MAC) return downloadAndInstallMac(onProgress);
+  if (!IS_WIN) throw new Error('Install TeX Live with your package manager (for example: sudo apt install texlive-full), then choose Detect again.');
   const dest = path.join(os.tmpdir(), 'basic-miktex-x64.exe');
   let last = 0;
   await download(MIKTEX_URL, dest, ({ got, total }) => {

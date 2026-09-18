@@ -21,7 +21,24 @@ protocol.registerSchemesAsPrivileged([
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 const APP_URL = 'app://bundle/index.html';
 
-if (!app.requestSingleInstanceLock()) {
+// Startup log (userData/logs/main.log) so problems on students' PCs can be diagnosed.
+function log(...parts) {
+  try {
+    const dir = path.join(app.getPath('userData'), 'logs');
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, 'main.log');
+    if (fs.existsSync(file) && fs.statSync(file).size > 512 * 1024) fs.renameSync(file, `${file}.old`);
+    fs.appendFileSync(file, `${new Date().toISOString()} ${parts.map((p) => (typeof p === 'string' ? p : JSON.stringify(p))).join(' ')}\n`);
+  } catch {
+    /* logging must never break startup */
+  }
+}
+log('start', { version: app.getVersion(), electron: process.versions.electron, packaged: app.isPackaged, exe: process.execPath, argv: process.argv.slice(1) });
+process.on('uncaughtException', (err) => log('uncaughtException', String((err && err.stack) || err)));
+
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  log('another instance is running; handing over and quitting');
   app.quit();
 }
 
@@ -52,6 +69,7 @@ function createWindow() {
   const colors = themeColors();
   const bounds = s.windowBounds || { width: 1440, height: 900 };
 
+  const isMac = process.platform === 'darwin';
   mainWindow = new BrowserWindow({
     ...bounds,
     minWidth: 960,
@@ -59,9 +77,10 @@ function createWindow() {
     show: false,
     title: 'FreedomTex',
     backgroundColor: colors.bg,
-    icon: paths.iconPath(),
-    titleBarStyle: 'hidden',
-    titleBarOverlay: { color: colors.bg, symbolColor: colors.fg, height: 40 },
+    icon: isMac ? undefined : paths.iconPath(),
+    // macOS keeps its traffic-light buttons (top left); Windows draws caption buttons over our title bar.
+    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    ...(isMac ? { trafficLightPosition: { x: 14, y: 12 } } : { titleBarOverlay: { color: colors.bg, symbolColor: colors.fg, height: 40 } }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -70,9 +89,28 @@ function createWindow() {
       spellcheck: true,
     },
   });
-  if (s.maximized) mainWindow.maximize();
+  log('window created', { bounds, theme: s.theme });
 
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  // Show the window as soon as it has painted, but never rely on that alone: on some PCs Chromium
+  // does not paint a hidden window, so 'ready-to-show' never fires and the app looks dead.
+  let shown = false;
+  const showOnce = (why) => {
+    if (shown || !mainWindow || mainWindow.isDestroyed()) return;
+    shown = true;
+    log('showing window', why);
+    if (s.maximized) mainWindow.maximize();
+    mainWindow.show();
+    mainWindow.focus();
+  };
+  mainWindow.once('ready-to-show', () => showOnce('ready-to-show'));
+  mainWindow.webContents.once('did-finish-load', () => setTimeout(() => showOnce('did-finish-load'), 150));
+  setTimeout(() => showOnce('timeout'), 3000);
+  mainWindow.webContents.on('did-fail-load', (_e, code, desc, url) => {
+    log('did-fail-load', { code, desc, url });
+    showOnce('did-fail-load');
+  });
+  mainWindow.webContents.on('render-process-gone', (_e, details) => log('render-process-gone', details));
+  mainWindow.on('unresponsive', () => log('window unresponsive'));
 
   const devUrl = process.env.VITE_DEV_SERVER_URL;
   mainWindow.loadURL(devUrl || APP_URL);
@@ -175,7 +213,9 @@ function registerAssetProtocol() {
 }
 
 app.on('second-instance', (_e, argv) => {
+  log('second-instance', argv.slice(1));
   if (mainWindow) {
+    if (!mainWindow.isVisible()) mainWindow.show();
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
     const t = argTarget(argv);
@@ -183,8 +223,67 @@ app.on('second-instance', (_e, argv) => {
   }
 });
 
+/**
+ * macOS: the menu bar lives at the top of the screen. The renderer sends its menu layout
+ * (labels, shortcuts, checked/enabled state) and we mirror it natively.
+ */
+const EDIT_ROLES = { cut: 'cut', copy: 'copy', paste: 'paste', selectAll: 'selectAll' };
+
+function macMenu(menus) {
+  const send = (id) => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('menu:command', id);
+  const convert = (items) =>
+    items.map((it) => {
+      if (it.separator) return { type: 'separator' };
+      if (it.items) return { label: it.label, submenu: convert(it.items) };
+      if (EDIT_ROLES[it.id]) return { role: EDIT_ROLES[it.id] };
+      const item = { label: it.label, enabled: it.enabled !== false, click: () => send(it.id) };
+      if (it.checked != null) {
+        item.type = 'checkbox';
+        item.checked = !!it.checked;
+      }
+      if (it.accelerator) item.accelerator = it.accelerator;
+      return item;
+    });
+  const template = [
+    {
+      label: 'FreedomTex',
+      submenu: [
+        { label: 'About FreedomTex', click: () => send('about') },
+        { type: 'separator' },
+        { label: 'Settings...', accelerator: 'Cmd+,', click: () => send('preferences') },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' },
+      ],
+    },
+    ...(menus || []).filter((m) => m.id !== 'about').map((m) => ({ label: m.label, submenu: convert(m.items) })),
+    { role: 'windowMenu' },
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+app.on('child-process-gone', (_e, details) => log('child-process-gone', details));
+
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null);
+  if (!gotLock) return;
+  log('ready');
+  if (process.platform === 'darwin') {
+    macMenu([]);
+    require('electron').ipcMain.on('app:setMenu', (_e, menus) => {
+      try {
+        macMenu(menus);
+      } catch (err) {
+        console.error('menu', err);
+      }
+    });
+  } else {
+    Menu.setApplicationMenu(null);
+  }
   pendingOpen = argTarget(process.argv);
   registerAppProtocol();
   registerAssetProtocol();

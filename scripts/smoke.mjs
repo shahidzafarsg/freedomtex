@@ -29,6 +29,9 @@ const shot = async (name) => {
   console.log(`screenshot: ${name}.png`);
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Cmd on a Mac, Ctrl elsewhere (the app treats both the same; CodeMirror expects Cmd on macOS).
+const MAC = process.platform === 'darwin';
+const MOD = MAC ? 'Meta' : 'Control';
 
 try {
   await win.waitForSelector('.dash, .setup', { timeout: 30000 });
@@ -57,7 +60,7 @@ try {
   await sleep(300);
   await win.keyboard.press('ArrowDown');
   await win.keyboard.press('ArrowDown');
-  await win.keyboard.press('Control+Alt+ArrowRight');
+  await win.keyboard.press(`${MOD}+Alt+ArrowRight`);
   const hl = await win.waitForSelector('.pdf-highlight', { timeout: 15000 }).then(() => true).catch(() => false);
   console.log('synctex forward highlight:', hl);
   await sleep(700);
@@ -72,39 +75,45 @@ try {
   await win.click('.segmented >> text=Code');
 
   // Logs panel
-  await win.keyboard.press('Control+j');
+  await win.keyboard.press(`${MOD}+j`);
   await sleep(600);
   await shot('04-logs');
-  await win.keyboard.press('Control+j');
+  await win.keyboard.press(`${MOD}+j`);
 
   // Dark mode
-  await win.keyboard.press('Control+Shift+l');
+  await win.keyboard.press(`${MOD}+Shift+l`);
   await sleep(800);
   await shot('05-dark');
 
-  // Menus
-  await win.click('.menu-trigger >> text=Insert');
-  await sleep(300);
-  await shot('06-menu-insert');
-  await win.keyboard.press('Escape');
+  // Menus (in-window on Windows; macOS uses the system menu bar)
+  if (!MAC) {
+    await win.click('.menu-trigger >> text=Insert');
+    await sleep(300);
+    await shot('06-menu-insert');
+    await win.keyboard.press('Escape');
+  }
 
   // About dialog
-  await win.click('.menu-trigger >> text=About');
-  await win.click('.menu-item >> text=About FreedomTex');
+  if (MAC) {
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('menu:command', 'about'));
+  } else {
+    await win.click('.menu-trigger >> text=About');
+    await win.click('.menu-item >> text=About FreedomTex');
+  }
   await sleep(500);
   await shot('07-about');
   await win.keyboard.press('Escape');
-  await win.keyboard.press('Control+Shift+l'); // back to light
+  await win.keyboard.press(`${MOD}+Shift+l`); // back to light
 
   // Word count
-  await win.keyboard.press('Control+Shift+w');
+  await win.keyboard.press(`${MOD}+Shift+w`);
   await win.waitForSelector('.stats', { timeout: 15000 });
   await sleep(300);
   await shot('08-wordcount');
   await win.keyboard.press('Escape');
 
   // Settings
-  await win.keyboard.press('Control+,');
+  await win.keyboard.press(`${MOD}+,`);
   await sleep(400);
   await win.click('.settings-nav >> text=Editor');
   await sleep(300);
@@ -113,14 +122,14 @@ try {
 
   // History (make an edit first so there are two versions)
   await win.click('.cm-content');
-  await win.keyboard.press('Control+End');
+  await win.keyboard.press(MAC ? 'Meta+ArrowDown' : 'Control+End');
   await win.keyboard.type('\n% edited by smoke test\n');
   await sleep(1500);
-  await win.keyboard.press('Control+Shift+h');
+  await win.keyboard.press(`${MOD}+Shift+h`);
   await win.waitForSelector('.version-item', { timeout: 15000 });
   await sleep(800);
   await shot('10-history');
-  await win.keyboard.press('Control+Shift+h');
+  await win.keyboard.press(`${MOD}+Shift+h`);
 
   // Templates gallery (from the dashboard)
   await win.click('.rail .icon-btn >> nth=0');

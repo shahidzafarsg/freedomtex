@@ -205,6 +205,9 @@ async function compile(project, opts = {}, onLog = () => {}) {
           }
           if (br.code === 0 || exists(bbl)) state.citeKey = citeKey;
           needRerun = true;
+        } else if (info.type === 'texlive') {
+          // TeX Live ships biber/bibtex as installable packages of the same name.
+          return finish('missing', { missing: [{ file: `${bibTool} (program)`, package: bibTool }] });
         } else {
           bibIssues.errors.push({ level: 'error', message: `${bibTool} is not installed, so the bibliography cannot be built.`, file: null, line: null });
         }

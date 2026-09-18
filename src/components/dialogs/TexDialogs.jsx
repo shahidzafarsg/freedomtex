@@ -5,6 +5,7 @@ import { call, on } from '../../lib/api';
 import { toast, errorMessage } from '../../lib/ui';
 import * as A from '../../actions';
 import { Modal, Progress } from '../ui';
+import { isMac } from '../../lib/platform';
 
 function useProgressLog() {
   const [log, setLog] = useState('');
@@ -282,7 +283,7 @@ export function TexDialog({ onClose }) {
         <div className="grow">
           <div style={{ fontWeight: 700 }}>{tex && tex.found ? tex.version : 'No TeX distribution found'}</div>
           <div className="muted" style={{ fontSize: 12 }}>
-            {tex && tex.found ? tex.binDir : 'FreedomTex needs MiKTeX or TeX Live to compile documents.'}
+            {tex && tex.found ? tex.binDir : isMac ? 'FreedomTex needs MacTeX or BasicTeX (TeX Live) to compile documents.' : 'FreedomTex needs MiKTeX or TeX Live to compile documents.'}
           </div>
         </div>
         <button className="btn btn-sm" onClick={redetect} disabled={!!busy}>
@@ -306,7 +307,7 @@ export function TexDialog({ onClose }) {
         )}
         {(!tex || !tex.found) && (
           <button className="btn" onClick={() => action('download', 'tex:downloadInstall')} disabled={!!busy}>
-            {busy === 'download' ? <Loader2 size={15} className="spin" /> : <Download size={15} />} Download and install MiKTeX
+            {busy === 'download' ? <Loader2 size={15} className="spin" /> : <Download size={15} />} {isMac ? 'Download and install BasicTeX (TeX Live for Mac)' : 'Download and install MiKTeX'}
           </button>
         )}
         {tex && tex.type === 'miktex' && (

@@ -41,7 +41,6 @@
     ],
     "extraResources": [
       { "from": "templates", "to": "templates" },
-      { "from": "resources/miktex", "to": "miktex", "filter": ["*.exe"] },
       { "from": "LICENSE", "to": "LICENSE" },
       { "from": "THIRD_PARTY_NOTICES.md", "to": "THIRD_PARTY_NOTICES.md" },
       { "from": "build/icon.png", "to": "icon.png" }
@@ -50,7 +49,30 @@
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
       "icon": "build/icon.ico",
-      "legalTrademarks": "FreedomTex"
+      "legalTrademarks": "FreedomTex",
+      "extraResources": [
+        { "from": "resources/miktex", "to": "miktex", "filter": ["*.exe"] }
+      ]
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] },
+        { "target": "zip", "arch": ["arm64", "x64"] }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.productivity",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "extendInfo": {
+        "NSDocumentsFolderUsageDescription": "FreedomTex keeps your LaTeX projects in your Documents folder.",
+        "NSDesktopFolderUsageDescription": "FreedomTex can open LaTeX projects stored on your Desktop.",
+        "NSDownloadsFolderUsageDescription": "FreedomTex can import projects and save PDFs in your Downloads folder."
+      }
+    },
+    "dmg": {
+      "title": "FreedomTex ${version}",
+      "artifactName": "FreedomTex-${version}-mac-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,

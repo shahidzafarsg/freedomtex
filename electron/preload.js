@@ -16,6 +16,8 @@ function on(channel, cb) {
 contextBridge.exposeInMainWorld('ft', {
   call,
   on,
+  platform: process.platform,
+  setMenu: (menus) => ipcRenderer.send('app:setMenu', menus),
   pathForFile: (file) => {
     try {
       return webUtils.getPathForFile(file);

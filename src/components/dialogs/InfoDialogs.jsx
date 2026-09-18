@@ -5,6 +5,7 @@ import { call } from '../../lib/api';
 import * as E from '../../editor/controller';
 import { errorMessage } from '../../lib/ui';
 import { Modal } from '../ui';
+import { fmtShortcut } from '../../lib/platform';
 
 export function WordCountDialog({ onClose }) {
   const project = useStore((s) => s.project);
@@ -144,7 +145,7 @@ export function ShortcutsDialog({ onClose }) {
                       {k.split(' / ').map((part, i) => (
                         <span key={i}>
                           {i > 0 && ' / '}
-                          <kbd>{part}</kbd>
+                          <kbd>{fmtShortcut(part)}</kbd>
                         </span>
                       ))}
                     </td>

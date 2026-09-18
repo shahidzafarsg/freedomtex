@@ -259,6 +259,11 @@ code {
   position: relative;
   z-index: 30;
 }
+/* macOS: traffic-light buttons sit on the left, menus live in the system menu bar. */
+:root[data-platform='darwin'] .titlebar {
+  padding-left: 84px;
+  padding-right: 14px;
+}
 .titlebar .no-drag,
 .titlebar button {
   -webkit-app-region: no-drag;

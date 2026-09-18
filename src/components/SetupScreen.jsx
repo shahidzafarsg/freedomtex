@@ -6,6 +6,7 @@ import * as A from '../actions';
 import { Progress } from './ui';
 import { errorMessage } from '../lib/ui';
 import logo from '../assets/logo.svg';
+import { isMac } from '../lib/platform';
 
 export default function SetupScreen() {
   const tex = useStore((s) => s.tex);
@@ -44,7 +45,7 @@ export default function SetupScreen() {
       await A.updateSettings({ setupDone: true });
       setPhase('done');
     } else {
-      setError('pdflatex.exe was not found in that folder. For MiKTeX it is usually ...\\MiKTeX\\miktex\\bin\\x64.');
+      setError(isMac ? 'pdflatex was not found in that folder. For MacTeX it is usually /Library/TeX/texbin.' : 'pdflatex.exe was not found in that folder. For MiKTeX it is usually ...\\MiKTeX\\miktex\\bin\\x64.');
       setPhase('error');
     }
   };
@@ -64,7 +65,8 @@ export default function SetupScreen() {
           <>
             <h1>Welcome to FreedomTex</h1>
             <p>
-              FreedomTex needs a LaTeX engine to turn your documents into PDFs. {bundled ? 'One is included with this installer, so no internet connection is needed.' : 'We can download and install MiKTeX for you.'}
+              FreedomTex needs a LaTeX engine to turn your documents into PDFs.{' '}
+              {bundled ? 'One is included with this installer, so no internet connection is needed.' : isMac ? 'We can download BasicTeX, the compact TeX Live for Mac, and open its installer for you.' : 'We can download and install MiKTeX for you.'}
             </p>
             <div className="setup-steps">
               <div className="setup-step">
@@ -72,9 +74,11 @@ export default function SetupScreen() {
                   <PackageCheck size={17} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 650 }}>MiKTeX, a free LaTeX distribution for Windows</div>
+                  <div style={{ fontWeight: 650 }}>{isMac ? 'BasicTeX, TeX Live for macOS' : 'MiKTeX, a free LaTeX distribution for Windows'}</div>
                   <div className="muted" style={{ fontSize: 12.5 }}>
-                    Includes pdfLaTeX, XeLaTeX, LuaLaTeX, BibTeX and Biber. It installs for your Windows account only, so administrator rights are not needed.
+                    {isMac
+                      ? 'Includes pdfLaTeX, XeLaTeX and LuaLaTeX. Apple’s installer will ask for your Mac password. Already have MacTeX? Choose "I already have LaTeX installed".'
+                      : 'Includes pdfLaTeX, XeLaTeX, LuaLaTeX, BibTeX and Biber. It installs for your Windows account only, so administrator rights are not needed.'}
                   </div>
                 </div>
               </div>
@@ -104,7 +108,7 @@ export default function SetupScreen() {
                 </button>
               ) : (
                 <button className="btn btn-primary btn-lg" onClick={() => install('download')}>
-                  <Download size={17} /> Download and install MiKTeX (about 140 MB)
+                  <Download size={17} /> {isMac ? 'Download and install BasicTeX (about 100 MB)' : 'Download and install MiKTeX (about 140 MB)'}
                 </button>
               )}
               <div className="row">
@@ -121,7 +125,11 @@ export default function SetupScreen() {
         {phase === 'installing' && (
           <>
             <h1>Setting up LaTeX</h1>
-            <p>MiKTeX is being installed. A MiKTeX progress window may appear. This usually takes a few minutes, so please keep FreedomTex open.</p>
+            <p>
+              {isMac
+                ? 'BasicTeX is downloading. When the macOS installer opens, follow its steps and enter your password. Keep FreedomTex open.'
+                : 'MiKTeX is being installed. A MiKTeX progress window may appear. This usually takes a few minutes, so please keep FreedomTex open.'}
+            </p>
             <Progress />
             <pre className="console" ref={logRef} style={{ marginTop: 14 }}>
               {log || 'Starting...'}
@@ -154,8 +162,8 @@ export default function SetupScreen() {
               <button className="btn btn-primary" onClick={() => setPhase('choose')}>
                 Try again
               </button>
-              <button className="btn" onClick={() => call('app:openExternal', 'https://miktex.org/download')}>
-                Get MiKTeX from miktex.org
+              <button className="btn" onClick={() => call('app:openExternal', isMac ? 'https://www.tug.org/mactex/' : 'https://miktex.org/download')}>
+                {isMac ? 'Get MacTeX from tug.org' : 'Get MiKTeX from miktex.org'}
               </button>
               <span className="spacer" />
               <button className="btn btn-ghost" onClick={finish}>

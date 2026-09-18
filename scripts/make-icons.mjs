@@ -9,7 +9,8 @@ fs.mkdirSync(path.join(root, 'build'), { recursive: true });
 
 const render = (size) => sharp(logo, { density: Math.max(72, Math.ceil((size / 256) * 96 * 1.5)) }).resize(size, size).png().toBuffer();
 
-await fs.promises.writeFile(path.join(root, 'build/icon.png'), await render(512));
+// 1024 px: electron-builder turns this into the macOS .icns; Windows uses the .ico below.
+await fs.promises.writeFile(path.join(root, 'build/icon.png'), await render(1024));
 
 // ICO with PNG-compressed entries (supported since Windows Vista).
 const sizes = [16, 24, 32, 48, 64, 128, 256];

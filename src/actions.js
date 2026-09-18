@@ -2,6 +2,7 @@ import { call, on } from './lib/api';
 import { getState, setState, resetProjectState } from './store';
 import { openDialog, toast, prompt, confirm, errorMessage } from './lib/ui';
 import * as editor from './editor/controller';
+import { isMac } from './lib/platform';
 
 const emptyIssues = { errors: [], warnings: [], typesetting: [] };
 
@@ -349,7 +350,7 @@ export async function movePath(from, to) {
 
 export async function deletePath(path) {
   const p = getState().project;
-  const ok = await confirm({ title: 'Delete', message: `Move "${path}" to the Recycle Bin?`, okLabel: 'Delete', danger: true });
+  const ok = await confirm({ title: 'Delete', message: `Move "${path}" to the ${isMac ? 'Trash' : 'Recycle Bin'}?`, okLabel: 'Delete', danger: true });
   if (!ok) return;
   try {
     await call('fs:remove', p.id, path);

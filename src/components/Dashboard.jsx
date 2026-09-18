@@ -29,6 +29,7 @@ import { openDialog, prompt, confirm, toast, formatDate, errorMessage } from '..
 import * as A from '../actions';
 import { Menu } from './ui';
 import logo from '../assets/logo.svg';
+import { revealLabel, isMac } from '../lib/platform';
 
 export default function Dashboard() {
   const projects = useStore((s) => s.projects);
@@ -98,7 +99,7 @@ export default function Dashboard() {
     const ok = await confirm({
       title: 'Delete project permanently',
       message: p.managed
-        ? `"${p.name}" will be removed from FreedomTex and its folder moved to the Windows Recycle Bin.`
+        ? `"${p.name}" will be removed from FreedomTex and its folder moved to the ${isMac ? 'Trash' : 'Windows Recycle Bin'}.`
         : `"${p.name}" will be removed from FreedomTex. Its folder is not deleted:\n${p.path}`,
       okLabel: 'Delete',
       danger: true,
@@ -138,7 +139,7 @@ export default function Dashboard() {
       { label: 'Rename...', icon: <Pencil size={14} />, onClick: () => rename(p) },
       { label: 'Make a Copy...', icon: <Copy size={14} />, onClick: () => duplicate(p) },
       { label: 'Download Source (ZIP)...', icon: <Download size={14} />, onClick: () => A.exportZip(p.id) },
-      { label: 'Show in Explorer', icon: <FolderOpen size={14} />, onClick: () => call('app:openPath', p.path) },
+      { label: revealLabel, icon: <FolderOpen size={14} />, onClick: () => call('app:openPath', p.path) },
       { separator: true },
       { label: 'Tags', icon: <Tag size={14} />, items: tagMenu(p).items },
       { separator: true },

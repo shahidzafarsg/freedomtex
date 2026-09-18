@@ -23,6 +23,7 @@ import { call, pathForFile } from '../lib/api';
 import * as A from '../actions';
 import * as E from '../editor/controller';
 import { Menu } from './ui';
+import { revealLabel } from '../lib/platform';
 
 export function fileIcon(name, size = 15) {
   const ext = name.toLowerCase().split('.').pop();
@@ -71,7 +72,7 @@ export default function FileTree() {
         { label: 'Delete', icon: <Trash2 size={14} />, onClick: () => A.deletePath(node.path) },
         { separator: true },
         {
-          label: 'Show in Explorer',
+          label: revealLabel,
           icon: <ExternalLink size={14} />,
           onClick: async () => call('app:showItem', await call('fs:absPath', getState().project.id, node.path)),
         },

@@ -11,16 +11,23 @@ import Workspace from './components/Workspace';
 import SetupScreen from './components/SetupScreen';
 import DialogHost from './components/dialogs/Dialogs';
 import ErrorBoundary from './components/ErrorBoundary';
+import { platform, isMac } from './lib/platform';
+import { initNativeMenu } from './nativeMenu';
 import logo from './assets/logo.svg';
 
 export default function App() {
   const screen = useStore((s) => s.screen);
 
   useEffect(() => {
-    boot().catch((e) => {
-      console.error(e);
-      useStore.setState({ screen: 'dashboard' });
-    });
+    document.documentElement.dataset.platform = platform;
+    boot()
+      .then(() => {
+        if (isMac) initNativeMenu();
+      })
+      .catch((e) => {
+        console.error(e);
+        useStore.setState({ screen: 'dashboard' });
+      });
     window.addEventListener('keydown', handleGlobalKey);
     // Dropping files onto the window must not navigate away from the app.
     const stop = (e) => e.preventDefault();
