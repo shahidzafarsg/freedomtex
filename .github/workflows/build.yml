@@ -92,16 +92,26 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        shell: bash
         run: |
           npm ci
           node node_modules/electron/install.js
 
+      - name: Cache the MiKTeX installer
+        uses: actions/cache@v4
+        with:
+          path: resources/miktex
+          key: miktex-basic-25.12-x64
+
       - name: Build installer
+        shell: bash
         run: |
           node scripts/make-icons.mjs
           node scripts/fetch-miktex.mjs
           npx vite build
           npx electron-builder --win nsis --x64 --publish never
+          # The installer must contain MiKTeX; stop here if it does not.
+          ls release/win-unpacked/resources/miktex/basic-miktex-*.exe
 
       - name: First run on a PC without LaTeX (installs the bundled MiKTeX)
         env:
