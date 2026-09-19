@@ -67,12 +67,12 @@ try {
   await shot('02b-synctex');
 
   // Visual mode
-  await win.click('.segmented >> text=Visual');
+  await win.click('button[title="Visual editor"]');
   await sleep(300);
   await win.click('.outline-row >> text=Mathematics');
   await sleep(1200);
   await shot('03-visual-mode');
-  await win.click('.segmented >> text=Code');
+  await win.click('button[title="Code editor"]');
 
   // Logs panel
   await win.keyboard.press(`${MOD}+j`);

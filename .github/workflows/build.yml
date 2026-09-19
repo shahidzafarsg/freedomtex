@@ -62,6 +62,7 @@ jobs:
           name: mac-screenshots
           path: scripts/.smoke/*.png
           if-no-files-found: ignore
+          include-hidden-files: true
 
       - name: Upload builds
         uses: actions/upload-artifact@v4
@@ -117,6 +118,7 @@ jobs:
           name: windows-screenshots
           path: scripts/.smoke/**/*.png
           if-no-files-found: ignore
+          include-hidden-files: true
 
       - name: Upload installer
         uses: actions/upload-artifact@v4

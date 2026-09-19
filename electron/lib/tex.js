@@ -372,8 +372,52 @@ async function checkProject(root) {
 function runInstaller(installer, onProgress) {
   // Only options documented for the MiKTeX Setup Wizard (Documentation/Ref/setupwiz.xml): per-user, no questions.
   const args = ['--unattended', '--private'];
-  onProgress && onProgress(`Running ${path.basename(installer)} ${args.join(' ')}\n`);
-  return run(installer, args, { onData: onProgress, timeout: 60 * 60000 });
+  const log = (s) => onProgress && onProgress(s);
+  log(`Running ${path.basename(installer)} ${args.join(' ')}\n`);
+  const binDir = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'Programs', 'MiKTeX', 'miktex', 'bin', 'x64');
+  return new Promise((resolve) => {
+    const started = Date.now();
+    let child;
+    try {
+      // No pipes: waiting for pipes to close can hang if the installer leaves a helper process running.
+      // The window stays visible so MiKTeX's own progress and any message it shows can be seen.
+      child = require('child_process').spawn(installer, args, { stdio: 'ignore', windowsHide: false });
+    } catch (err) {
+      resolve({ code: -1, error: err });
+      return;
+    }
+    let done = false;
+    let readySince = 0;
+    let timer = null;
+    const finish = (code, why) => {
+      if (done) return;
+      done = true;
+      clearInterval(timer);
+      log(`MiKTeX setup finished (${why}, code ${code}).\n`);
+      resolve({ code });
+    };
+    child.on('exit', (code) => finish(code == null ? -1 : code, 'installer exited'));
+    child.on('error', (err) => {
+      log(`Could not start the installer: ${err.message}\n`);
+      finish(-1, 'start error');
+    });
+    timer = setInterval(() => {
+      const mins = ((Date.now() - started) / 60000).toFixed(1);
+      const ready = exists(path.join(binDir, 'pdflatex.exe')) && exists(path.join(binDir, 'initexmf.exe'));
+      if (ready && !readySince) readySince = Date.now();
+      log(`Installing MiKTeX: ${mins} min${ready ? ', engines installed, finishing up' : ''}\n`);
+      // Engines present for a while but the installer is still around: treat setup as done.
+      if (readySince && Date.now() - readySince > 3 * 60000) finish(0, 'engines ready');
+      if (Date.now() - started > 60 * 60000) {
+        try {
+          child.kill();
+        } catch {
+          /* ignore */
+        }
+        finish(-3, 'time limit');
+      }
+    }, 5000);
+  });
 }
 
 async function installBundled(onProgress) {
