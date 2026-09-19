@@ -36,7 +36,7 @@ for (const t of templates) {
       }
     }
     let res = await window.ft.call('compile:run', p.id, {});
-    for (let i = 0; i < 10 && res.status === 'missing'; i++) {
+    for (let i = 0; i < 25 && res.status === 'missing'; i++) {
       const pkgs = [...new Set(res.missing.map((m) => m.package).filter(Boolean))];
       if (pkgs.length) {
         const r = await window.ft.call('tex:install', pkgs);

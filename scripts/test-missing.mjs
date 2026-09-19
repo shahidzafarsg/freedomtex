@@ -35,7 +35,11 @@ try {
 
   await win.click('.cm-content');
   await win.keyboard.press('Control+a');
-  await win.keyboard.insertText(`\\documentclass{${cls}}\n\\begin{document}\n\\begin{questions}\n\\question[2] What is $2+2$?\n\\question[3] Name a LaTeX editor.\n\\end{questions}\n\\end{document}\n`);
+  const docs = {
+    exam: `\\documentclass{exam}\n\\begin{document}\n\\begin{questions}\n\\question[2] What is $2+2$?\n\\question[3] Name a LaTeX editor.\n\\end{questions}\n\\end{document}\n`,
+    moderncv: `\\documentclass{moderncv}\n\\moderncvstyle{classic}\n\\moderncvcolor{blue}\n\\name{Test}{Student}\n\\begin{document}\n\\makecvtitle\n\\section{Education}\n\\cventry{2024}{BSc}{Multimedia University}{Cyberjaya}{}{}\n\\end{document}\n`,
+  };
+  await win.keyboard.insertText(docs[cls] || docs.exam.replace('{exam}', `{${cls}}`));
   const t0 = Date.now();
   await win.waitForSelector('.modal >> text=Packages needed', { timeout: 60000 });
   console.log(`prompt appeared after ${((Date.now() - t0) / 1000).toFixed(1)}s`);

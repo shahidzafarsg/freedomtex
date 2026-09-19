@@ -159,10 +159,13 @@ function manifestCandidates() {
   return out;
 }
 
+let manifestPkgFiles = new Map(); // package -> its .sty/.cls file names
+
 async function loadManifestIndex() {
   if (manifestIndex) return manifestIndex;
   const file = manifestCandidates().find(exists);
   const map = new Map();
+  const pkgFiles = new Map();
   if (file) {
     const text = await fsp.readFile(file, 'utf8');
     let pkg = null;
@@ -180,12 +183,118 @@ async function loadManifestIndex() {
         // Prefer ordinary packages over MiKTeX meta packages (they start with "_" or "miktex-").
         const prev = map.get(base);
         if (!prev || (/^(_|miktex-)/.test(prev) && !/^(_|miktex-)/.test(pkg))) map.set(base, pkg);
+        if (/\.(sty|cls)$/.test(base)) {
+          if (!pkgFiles.has(pkg)) pkgFiles.set(pkg, []);
+          pkgFiles.get(pkg).push(base);
+        }
       }
     }
   }
   manifestIndex = map;
+  manifestPkgFiles = pkgFiles;
   return map;
 }
+
+/** Full paths of already-installed files, keyed by lower-case file name. Never triggers installs. */
+async function findInstalled(names) {
+  const finder = (detected.type === 'miktex' && toolPath('findtexmf')) || toolPath('kpsewhich');
+  const found = new Map();
+  if (!finder) return found;
+  for (let i = 0; i < names.length; i += 60) {
+    const r = await run(finder, names.slice(i, i + 60), { env: texEnv(), timeout: 60000 });
+    for (const line of r.stdout.split(/\r?\n/)) {
+      const t = line.trim();
+      if (t) found.set(path.basename(t).toLowerCase(), t);
+    }
+  }
+  return found;
+}
+
+const REQUIRE_RE = /\\(RequirePackage|RequirePackageWithOptions|usepackage|LoadClass|LoadClassWithOptions)\s*(?:\[[^\]]*\])?\s*\{([^}]+)\}/g;
+
+// Code that only runs for a particular option or when some file happens to exist.
+// Macro definitions (\def, \newcommand) are included: code in their bodies only runs when called.
+const CONDITIONAL_RE = /\\DeclareOption\*?\s*(?:\{[^{}]*\})?\s*\{|\\IfFileExists\s*\{[^{}]*\}\s*\{|\\@ifpackageloaded\s*\{[^{}]*\}\s*\{|\\@ifclassloaded\s*\{[^{}]*\}\s*\{|\\@ifpackagewith\s*\{[^{}]*\}\s*\{[^{}]*\}\s*\{|\\IfPackageLoadedTF\s*\{[^{}]*\}\s*\{|\\(?:long\\|protected\\)?[gex]?def\s*\\[a-zA-Z@]+[^{\n]*\{|\\(?:re)?newcommand\*?\s*\{?\\[a-zA-Z@]+\}?\s*(?:\[\d\])?(?:\[[^\]]*\])?\s*\{|\\providecommand\*?\s*\{?\\[a-zA-Z@]+\}?\s*(?:\[\d\])?\s*\{/g;
+
+function stripConditionalCode(text) {
+  let out = '';
+  let last = 0;
+  CONDITIONAL_RE.lastIndex = 0;
+  let m;
+  while ((m = CONDITIONAL_RE.exec(text))) {
+    const open = CONDITIONAL_RE.lastIndex - 1; // the "{" of the conditional body
+    let depth = 0;
+    let end = open;
+    for (; end < text.length; end++) {
+      const c = text[end];
+      if (c === '\\') {
+        end++;
+        continue;
+      }
+      if (c === '{') depth++;
+      else if (c === '}' && --depth === 0) break;
+    }
+    out += text.slice(last, m.index) + ' ';
+    last = end + 1;
+    CONDITIONAL_RE.lastIndex = last;
+  }
+  return out + text.slice(last);
+}
+
+/**
+ * MiKTeX package metadata does not list dependencies, and LaTeX reveals only one missing file per
+ * compile. So read the .sty/.cls files of freshly installed packages, as LaTeX would, and return the
+ * packages they load that are not installed yet.
+ */
+/** The file LaTeX loads for a package (hyperref -> hyperref.sty); all its .sty/.cls if there is no such file. */
+function mainFilesOf(pkgs) {
+  const out = [];
+  for (const p of pkgs) {
+    const files = manifestPkgFiles.get(p) || [];
+    const main = files.filter((b) => b === `${p.toLowerCase()}.sty` || b === `${p.toLowerCase()}.cls`);
+    out.push(...(main.length ? main : files));
+  }
+  return [...new Set(out)];
+}
+
+/**
+ * Follows the files LaTeX would actually load (not every helper file shipped with a package), so
+ * optional extras are not downloaded. Returns missing packages plus the files that need them,
+ * which are scanned in the next round.
+ */
+async function missingDependencies(filesToScan, alreadyHave = []) {
+  const idx = await loadManifestIndex();
+  const files = [...new Set(filesToScan)];
+  if (!files.length) return { pkgs: [], files: [] };
+  const located = await findInstalled(files);
+  const wanted = new Set();
+  for (const full of located.values()) {
+    let text;
+    try {
+      text = stripConditionalCode(stripComments(await fsp.readFile(full, 'utf8')));
+    } catch {
+      continue;
+    }
+    REQUIRE_RE.lastIndex = 0;
+    let m;
+    while ((m = REQUIRE_RE.exec(text))) {
+      const ext = /LoadClass/.test(m[1]) ? '.cls' : '.sty';
+      for (let n of m[2].split(',')) {
+        n = n.trim();
+        if (!n || /[#\\@\s]/.test(n)) continue;
+        wanted.add((n.toLowerCase().endsWith(ext) ? n : n + ext).toLowerCase());
+      }
+    }
+  }
+  const names = [...wanted].filter((n) => idx.has(n));
+  if (!names.length) return { pkgs: [], files: [] };
+  const have = await findInstalled(names);
+  const missingFiles = names.filter((n) => !have.has(n));
+  const pkgs = [...new Set(missingFiles.map((n) => idx.get(n)))].filter((p) => p && !alreadyHave.includes(p));
+  return { pkgs, files: missingFiles };
+}
+
+const TRANSIENT_NET = /SSL connect error|Couldn't connect|Could not connect|timed out|Timeout was reached|Couldn't resolve|transfer closed|Connection reset|HTTP (5\d\d)/i;
 
 /** Map missing file names to installable package names. */
 async function resolvePackages(files) {
@@ -236,23 +345,51 @@ async function installPackages(pkgs, onProgress) {
     if (detected.type === 'miktex') {
       const miktex = toolPath('miktex');
       const mpm = toolPath('mpm');
-      const doInstall = () =>
+      const doInstall = (list) =>
         miktex
-          ? run(miktex, ['--verbose', 'packages', 'install', ...unique], { env: texEnv(), onData: log, timeout: 30 * 60000 })
-          : run(mpm, ['--verbose', ...unique.map((p) => `--install=${p}`)], { env: texEnv(), onData: log, timeout: 30 * 60000 });
-      let r = await doInstall();
-      if (r.code !== 0 && /unknown package|not found|database/i.test(r.stdout + r.stderr)) {
-        log('\nRefreshing the MiKTeX package database, then retrying...\n');
-        if (miktex) await run(miktex, ['--verbose', 'packages', 'update-package-database'], { env: texEnv(), onData: log, timeout: 10 * 60000 });
-        else await run(mpm, ['--update-db'], { env: texEnv(), onData: log, timeout: 10 * 60000 });
-        r = await doInstall();
-      }
-      if (r.code !== 0) {
-        const already = /already installed/i.test(r.stdout + r.stderr);
-        if (!already) return { ok: false, error: (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-6).join('\n') };
-      }
+          ? run(miktex, ['--verbose', 'packages', 'install', ...list], { env: texEnv(), onData: log, timeout: 30 * 60000 })
+          : run(mpm, ['--verbose', ...list.map((p) => `--install=${p}`)], { env: texEnv(), onData: log, timeout: 30 * 60000 });
+      const install = async (list) => {
+        let r = await doInstall(list);
+        let out = r.stdout + r.stderr;
+        if (r.code !== 0 && TRANSIENT_NET.test(out)) {
+          log('\nThe download was interrupted. Trying once more...\n');
+          r = await doInstall(list);
+          out = r.stdout + r.stderr;
+        }
+        if (r.code !== 0 && /unknown package|not found|database/i.test(out)) {
+          log('\nRefreshing the MiKTeX package database, then retrying...\n');
+          if (miktex) await run(miktex, ['--verbose', 'packages', 'update-package-database'], { env: texEnv(), onData: log, timeout: 10 * 60000 });
+          else await run(mpm, ['--update-db'], { env: texEnv(), onData: log, timeout: 10 * 60000 });
+          r = await doInstall(list);
+          out = r.stdout + r.stderr;
+        }
+        if (r.code !== 0 && !/already installed/i.test(out)) return (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-6).join('\n');
+        return null;
+      };
+      const err = await install(unique);
+      if (err) return { ok: false, error: err };
       manifestIndex = null; // file lists may have changed after an update
-      return { ok: true, installed: unique };
+      // Install what the new packages load, so one prompt is enough for the whole document.
+      const installed = [...unique];
+      await loadManifestIndex();
+      let scan = mainFilesOf(unique);
+      for (let depth = 0; depth < 10 && scan.length; depth++) {
+        let next;
+        try {
+          next = await missingDependencies(scan, installed);
+        } catch {
+          break;
+        }
+        if (!next.pkgs.length) break;
+        log(`\nAlso installing packages these need: ${next.pkgs.join(', ')}\n`);
+        if (await install(next.pkgs)) break; // not fatal: the next compile will report anything still missing
+        manifestIndex = null;
+        await loadManifestIndex();
+        installed.push(...next.pkgs);
+        scan = next.files;
+      }
+      return { ok: true, installed };
     }
     if (detected.type === 'texlive') {
       let r = await runTlmgr(['install', ...unique], log, 30 * 60000);

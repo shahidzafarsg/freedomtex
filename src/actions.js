@@ -488,7 +488,7 @@ export async function preflightPackages() {
   return false;
 }
 
-const MAX_INSTALL_ROUNDS = 10;
+const MAX_INSTALL_ROUNDS = 25;
 
 /**
  * Ask to install missing packages. Once the student agrees, later rounds for the same
