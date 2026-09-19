@@ -54,13 +54,27 @@ Write theses, papers, reports and slides on your own computer, with no subscript
 
 ## Install
 
-1. Download `FreedomTex-Setup-<version>.exe` from the [Releases page](https://github.com/shahidzafarsg/freedomtex/releases).
-2. Run it. FreedomTex installs for your Windows account only, so administrator rights are not needed.
-3. On first launch, choose **Install MiKTeX (included)**. After that, everything works offline.
+Download the latest version from the [Releases page](https://github.com/shahidzafarsg/freedomtex/releases).
+
+### Windows
+
+1. Download `FreedomTex-Setup-<version>.exe` and run it. FreedomTex installs for your Windows account only, so administrator rights are not needed.
+2. On first launch, choose **Install MiKTeX (included)**. After that, everything works offline.
 
 > Windows may show a SmartScreen notice because the installer is not code-signed. Choose **More info**, then **Run anyway**.
 
 **Requirements:** Windows 10 or 11 (64-bit), about 1 GB of free disk space.
+
+### macOS
+
+1. Download the `.dmg` for your Mac: `mac-arm64` for Apple Silicon (M1 and later), `mac-x64` for Intel Macs.
+2. Open it and drag **FreedomTex** into **Applications**.
+3. The first time, macOS blocks apps from unidentified developers. Open **System Settings > Privacy & Security**, scroll down and choose **Open Anyway** next to the FreedomTex message. (On older macOS, right-click the app and choose **Open**.)
+4. On first launch, choose **Download and install BasicTeX**, or point FreedomTex to an existing MacTeX installation. Missing packages are installed when a document needs them; macOS asks for your password.
+
+> If macOS says the app "is damaged", run `xattr -cr /Applications/FreedomTex.app` in Terminal once. This clears the download quarantine flag on unsigned apps.
+
+**Requirements:** macOS 12 or later.
 
 ## Using Zotero
 
