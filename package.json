@@ -23,7 +23,8 @@
     "fetch-miktex": "node scripts/fetch-miktex.mjs",
     "smoke": "node scripts/smoke.mjs",
     "test:templates": "node scripts/test-templates.mjs",
-    "dist": "node scripts/make-icons.mjs && node scripts/fetch-miktex.mjs && vite build && electron-builder --win nsis --x64"
+    "dist": "node scripts/make-icons.mjs && node scripts/fetch-miktex.mjs && vite build && electron-builder --win nsis --x64",
+    "dist:arm64": "node scripts/make-icons.mjs && node scripts/fetch-miktex.mjs && vite build && electron-builder --win nsis --arm64 -c.nsis.artifactName=FreedomTex-Setup-${version}-arm64.exe"
   },
   "build": {
     "appId": "org.freedomtex.app",

@@ -143,3 +143,74 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: gh release upload "$TAG" release/FreedomTex-Setup-*.exe --clobber
+
+  windows-arm:
+    name: Windows on ARM (clean machine, first-run MiKTeX install)
+    runs-on: windows-11-arm
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          npm ci
+          node node_modules/electron/install.js
+
+      - name: Cache the MiKTeX installer
+        uses: actions/cache@v4
+        with:
+          path: resources/miktex
+          key: miktex-basic-25.12-x64
+
+      - name: Build installer (ARM64)
+        shell: bash
+        run: |
+          node scripts/make-icons.mjs
+          node scripts/fetch-miktex.mjs
+          npx vite build
+          npx electron-builder --win nsis --arm64 --publish never -c.nsis.artifactName='FreedomTex-Setup-${version}-arm64.exe'
+          # The installer must contain MiKTeX; stop here if it does not.
+          ls release/win-arm64-unpacked/resources/miktex/basic-miktex-*.exe
+
+      # MiKTeX is x64 only; Windows 11 on ARM runs it through x64 emulation.
+      - name: First run on a PC without LaTeX (installs the bundled MiKTeX)
+        env:
+          SMOKE_EXE: release\win-arm64-unpacked\FreedomTex.exe
+        run: node scripts/test-firstrun.mjs
+
+      - name: Compile templates with the fresh MiKTeX
+        run: node scripts/test-templates.mjs blank example thesis ieee-conference
+
+      - name: UI smoke test on the packaged app
+        env:
+          SMOKE_EXE: release\win-arm64-unpacked\FreedomTex.exe
+        run: node scripts/smoke.mjs
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-arm-screenshots
+          path: scripts/.smoke/**/*.png
+          if-no-files-found: ignore
+          include-hidden-files: true
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: freedomtex-windows-arm64
+          path: release/FreedomTex-Setup-*-arm64.exe
+
+      - name: Attach to release
+        if: github.event_name == 'release' || inputs.tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" release/FreedomTex-Setup-*-arm64.exe --clobber

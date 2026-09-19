@@ -58,12 +58,16 @@ Download the latest version from the [Releases page](https://github.com/shahidza
 
 ### Windows
 
-1. Download `FreedomTex-Setup-<version>.exe` and run it. FreedomTex installs for your Windows account only, so administrator rights are not needed.
+1. Download the installer for your PC and run it. FreedomTex installs for your Windows account only, so administrator rights are not needed.
+   - `FreedomTex-Setup-<version>.exe` for most PCs (Intel or AMD processor).
+   - `FreedomTex-Setup-<version>-arm64.exe` for Windows on ARM (Snapdragon processors, for example Copilot+ PCs and Surface Pro X).
+
+   Not sure? Open **Settings > System > About** and check **System type**: "x64-based processor" or "ARM-based processor".
 2. On first launch, choose **Install MiKTeX (included)**. After that, everything works offline.
 
 > Windows may show a SmartScreen notice because the installer is not code-signed. Choose **More info**, then **Run anyway**.
 
-**Requirements:** Windows 10 or 11 (64-bit), about 1 GB of free disk space.
+**Requirements:** Windows 10 or 11 (64-bit), about 1 GB of free disk space. Windows on ARM needs Windows 11: MiKTeX has no ARM version yet, so it runs through the x64 emulation built into Windows 11.
 
 ### macOS
 
@@ -101,7 +105,7 @@ To build the installer (downloads and verifies the MiKTeX basic installer, about
 npm run dist
 ```
 
-The installer is written to `release/`.
+The installer is written to `release/`. Use `npm run dist:arm64` for the Windows on ARM installer.
 
 Useful scripts:
 
