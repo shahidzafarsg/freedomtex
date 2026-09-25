@@ -9,8 +9,7 @@ Write theses, papers, reports and slides on your own computer, with no subscript
 
 <p align="center">
   Developed by <b>Shahid Zafar</b>, PhD Candidate, Multimedia University, Malaysia ·
-  <a href="https://freedomsoft.uk">freedomsoft.uk</a><br>
-  Dedicated to the students of <b>Multimedia University (MMU), Malaysia</b>, to give them relief from paying for LaTeX subscriptions.
+  <a href="https://freedomsoft.uk">freedomsoft.uk</a>
 </p>
 
 ---
@@ -129,5 +128,5 @@ build/             Icons used by the installer
 
 ## License
 
-FreedomTex is open source under the [MIT License](LICENSE). Copyright © 2026 Shahid Zafar.
+FreedomTex is open source under the [MIT License](LICENSE). Copyright © 2026 freedomsoft.uk.
 Third-party components are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

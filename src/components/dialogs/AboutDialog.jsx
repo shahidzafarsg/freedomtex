@@ -68,7 +68,7 @@ export default function AboutDialog({ tab: initial, onClose }) {
                 <Heart size={20} />
               </div>
               <div>
-                <div style={{ fontWeight: 700 }}>Dedicated to the students of Multimedia University (MMU), Malaysia</div>
+                <div style={{ fontWeight: 700 }}>Free for every student</div>
                 <div className="muted">Created to give students relief from paying for LaTeX subscriptions. Free to use, share and improve.</div>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function AboutDialog({ tab: initial, onClose }) {
               own computer for free.
             </p>
             <p style={{ lineHeight: 1.65, fontSize: 13.5 }}>
-              FreedomTex is dedicated to the students of Multimedia University, Malaysia. It is open source so that anyone can use it, learn from it and help improve it.
+              FreedomTex is open source so that anyone can use it, learn from it and help improve it.
             </p>
             <div className="row" style={{ flexWrap: 'wrap' }}>
               <button className="btn" onClick={() => call('app:openExternal', WEBSITE_URL)}>
@@ -156,7 +156,7 @@ export default function AboutDialog({ tab: initial, onClose }) {
       </div>
       <div className="modal-footer">
         <span className="faint" style={{ fontSize: 12, marginRight: 'auto' }}>
-          Copyright © 2026 Shahid Zafar
+          Copyright © 2026 freedomsoft.uk
         </span>
         <button className="btn btn-primary" onClick={onClose}>
           Close

@@ -2,7 +2,7 @@
   "name": "freedomtex",
   "productName": "FreedomTex",
   "version": "1.0.0",
-  "description": "FreedomTex - a free, offline LaTeX editor for Windows. Dedicated to the students of Multimedia University, Malaysia.",
+  "description": "FreedomTex - a free, offline LaTeX editor for Windows.",
   "author": {
     "name": "Shahid Zafar",
     "url": "https://freedomsoft.uk"
@@ -29,7 +29,7 @@
   "build": {
     "appId": "org.freedomtex.app",
     "productName": "FreedomTex",
-    "copyright": "Copyright © 2026 Shahid Zafar",
+    "copyright": "Copyright © 2026 freedomsoft.uk",
     "directories": {
       "output": "release",
       "buildResources": "build"
